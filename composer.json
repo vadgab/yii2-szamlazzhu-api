@@ -1,5 +1,5 @@
 {
-    "name": "vadgab/yii2-szamlazz-api",
+    "name": "vadgab/yii2-szamlazzhu-api",
     "type": "yii2-extension",
     "keywords": ["yii2", "szamlazzhu", "api"],
     "description": "The application is a YII2-Extension for the Szamlazz.hu API",
