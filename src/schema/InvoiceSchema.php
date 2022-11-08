@@ -1,6 +1,6 @@
 <?
 
-namespace vadgab\Yii2SzamlazzhuApi\InvoiceSchema;
+namespace vadgab\Yii2SzamlazzhuApi\Schema;
 
 use vadgab\Yii2SzamlazzhuApi\SzamlazzhuApi;
 

@@ -19,7 +19,7 @@
     "autoload": {
         "psr-4": {
             "vadgab\\Yii2SzamlazzhuApi\\": "src",
-	    "vadgab\\Yii2SzamlazzhuApi\\SzamlazzhuSchema\\": "src/schema"
+	    "vadgab\\Yii2SzamlazzhuApi\\Schema\\": "src/schema"
         }
     },
     "classmap" : [
