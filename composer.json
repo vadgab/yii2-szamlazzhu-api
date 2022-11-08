@@ -1,0 +1,36 @@
+{
+    "name": "vadgab/yii2-szamlazz-api",
+    "type": "yii2-extension",
+    "keywords": ["yii2", "szamlazzhu", "api"],
+    "description": "The application is a YII2-Extension for the Szamlazz.hu API",
+    "license": "MIT",
+    "support": {
+    },
+    "authors": [
+        {
+            "name": "Gábor Vadász",
+            "email": "gabor.vadasz@allstar.hu"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "yiisoft/yii2": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "vadgab\\Yii2SzamlazzhuApi\\": "src",
+	    "vadgab\\Yii2SzamlazzhuApi\\SzamlazzhuSchema\\": "src/schema"
+        }
+    },
+    "classmap" : [
+        "src/"
+    ],	
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.packagist.org"
+        }
+    ],
+    "require-dev": {
+    }
+}
