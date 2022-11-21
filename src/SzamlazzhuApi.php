@@ -3,225 +3,161 @@
 namespace vadgab\Yii2SzamlazzhuApi;
 
 
-
+use vadgab\Yii2SzamlazzhuApi\Schema\InvoiceSchema;
 
 
 
 class SzamlazzhuApi
 {
 
+
     const URL_MAIN = "https://www.szamlazz.hu/szamla/";
     const TYPE = "1";
-    public $type = 1;
-    public $pdfTagNameValue = null;
 
 
 
 
 
-
-    public static function createSzamla(){
-
-
-        $session = new Session;
-        // cookie file teljes elérési útja a szerveren
-        $cookie_file = __dir__."/temp/szamlazz_cookie.txt";
-        // ebbe a fájlba menti a pdf-et, ha az xml-ben kértük
-
-        // ezt az xml fájlt küldi a számla agentnek
-        if($this->type==1){
-            $adatok['fejlec']['elolegszamla'] = 'false';
-            $adatok['fejlec']['vegszamla'] = 'false';
-            $adatok['fejlec']['helyesbitoszamla'] = 'false';
-            $adatok['fejlec']['dijbekero'] = 'false';
-            $adatok['fejlec']['szallitolevel'] = 'false';
-            $xmlfile = self::SzamlaGenerateXml($adatok);
-            $curlName = "action-xmlagentxmlfile";
-            $pdfTagName = "szamla";
-
-        }
-        if($this->type==2){
-            $xmlfile = self::SzamlaKifGenerateXml($adatok);
-            $curlName = "action-szamla_agent_kifiz";
-            $pdfTagName = "szamlakifiz";
-        }
-        if($this->type==3){
-            $xmlfile = self::SzamlaSztornoGenerateXml($adatok);
-            $curlName = "action-szamla_agent_st";
-            $pdfTagName = "szamlast";
-        }
-        if($this->type==4){
-//            $xmlfile = self::SzamlaSztornoGenerateXml($adatok);
-            $curlName = "action-szamla_agent_pdf";
-            $pdfTagName = "szamlapdf";
-        }
-
-        if($this->type==5){  ////////////////////////////////////ELÕLEG SZÁMLA
-            $adatok['fejlec']['elolegszamla'] = 'true';
-            $adatok['fejlec']['vegszamla'] = 'false';
-            $adatok['fejlec']['helyesbitoszamla'] = 'false';
-            $adatok['fejlec']['dijbekero'] = 'false';
-            $adatok['fejlec']['szallitolevel'] = 'false';
-            $xmlfile = self::SzamlaGenerateXml($adatok);
-            $curlName = "action-xmlagentxmlfile";
-            $pdfTagName = "szamla";
-        }
-
-        if($this->type==6){  ////////////////////////////////////VÉG SZÁMLA
-            $adatok['fejlec']['elolegszamla'] = 'false';
-            $adatok['fejlec']['vegszamla'] = 'true';
-            $adatok['fejlec']['helyesbitoszamla'] = 'false';
-            $adatok['fejlec']['dijbekero'] = 'false';
-            $adatok['fejlec']['szallitolevel'] = 'false';
-            $xmlfile = self::SzamlaGenerateXml($adatok);
-            $curlName = "action-xmlagentxmlfile";
-            $pdfTagName = "szamla";
-        }
-
-        if($this->type==7){   ////////////////////////////////////HELYESBÍTÕ SZÁMLA
-            $adatok['fejlec']['elolegszamla'] = 'false';
-            $adatok['fejlec']['vegszamla'] = 'false';
-            $adatok['fejlec']['helyesbitoszamla'] = 'true';
-            $adatok['fejlec']['dijbekero'] = 'false';
-            $adatok['fejlec']['szallitolevel'] = 'false';
-            $xmlfile = self::SzamlaGenerateXml($adatok);
-            $curlName = "action-xmlagentxmlfile";
-            $pdfTagName = "szamla";
-        }
-
-        if($this->type==8){    ////////////////////////////////////DÍJBEKÉRÕ SZÁMLA
-            $adatok['fejlec']['elolegszamla'] = 'false';
-            $adatok['fejlec']['vegszamla'] = 'false';
-            $adatok['fejlec']['helyesbitoszamla'] = 'false';
-            $adatok['fejlec']['dijbekero'] = 'true';
-            $adatok['fejlec']['szallitolevel'] = 'false';
-            $xmlfile = self::SzamlaGenerateXml($adatok);
-            $curlName = "action-xmlagentxmlfile";
-            $pdfTagName = "szamla";
-        }
-
-        if($this->type==9){      ////////////////////////////////////SZÁLLÍTÓ LEVÉL
-            $adatok['fejlec']['elolegszamla'] = 'false';
-            $adatok['fejlec']['vegszamla'] = 'false';
-            $adatok['fejlec']['helyesbitoszamla'] = 'false';
-            $adatok['fejlec']['dijbekero'] = 'false';
-            $adatok['fejlec']['szallitolevel'] = 'true';
-            $xmlfile = self::SzamlaGenerateXml($adatok);
-            $curlName = "action-xmlagentxmlfile";
-            $pdfTagName = "szallito";
-        }
-
-        if($this->type==10){
-            $xmlfile = self::SzamlaDijDelGenerateXml($adatok);
-            $curlName = "action-szamla_agent_dijbekero_torlese";
-            $pdfTagName = "szamlaDijDel";
-        }
+    public function createSzamla($schema){
 
 
 
+        // cookie file teljes elÃ©rÃ©si Ãºtja a szerveren
 
-        if($this->pdfTagNameValue)$pdfTagName = $this->pdfTagNameValue;
+        $cookie_file = __dir__."/../temp/szamlazz_cookie.txt";
+
+        $dir = __dir__."/../temp/generateXml/".date('Y')."/".date('m')."/";
+        if(!is_dir(__dir__."/../temp/generateXml/".date('Y')))mkdir(__dir__."/../temp/generateXml/".date('Y'));
+        if(!is_dir(__dir__."/../temp/generateXml/".date('Y')."/".date('m')))mkdir(__dir__."/../temp/generateXml/".date('Y')."/".date('m'));
+        $filename = date('YmdHis')."_".$schema->curlName."_".rand(1000,9999).".xml";
+        $fullPathFilename = $dir.$filename;
+        $fileSave = file_put_contents($fullPathFilename,$schema->schema);
 
 
-        // ha kérjük a számla pdf-et, akkor legyen true
+        $xmlfile =  $schema->schema;
+
+
+
+        // ebbe a fÃ¡jlba menti a pdf-et, ha az xml-ben kÃ©rtÃ¼k
+        if($schema->pdfTagName)$pdfTagName = $schema->pdfTagName;
+        $curlName = $schema->curlName;
+        $outError = "";
+        $szamlaszam = "";
+        $agent_body = "";
+
+        // ha kÃ©rjÃ¼k a szÃ¡mla pdf-et, akkor legyen true
         $szamlaletoltes = true;
-        // ha még nincs --> létrehozzuk a cookie file-t --> léteznie kell, hogy a CURL írhasson bele
+        // ha mÃ©g nincs --> lÃ©trehozzuk a cookie file-t --> lÃ©teznie kell, hogy a CURL Ã­rhasson bele
         if (!file_exists($cookie_file)) {
             file_put_contents($cookie_file, '');
         }
-        // a CURL inicializálása
-        $ch = curl_init(URL_MAIN);
-        // A curl hívás esetén tanúsítványhibát kaphatunk az SSL tanúsítvány valódiságától
-        // függetlenül, ez az alábbi CURL paraméter állítással kiküszöbölhetõ,
-        // ilyenkor nincs külön SSL ellenõrzés:
+        // a CURL inicializÃ¡lÃ¡sa
+        $ch = curl_init(self::URL_MAIN);
+        // A curl hÃ­vÃ¡s esetÃ©n tanÃºsÃ­tvÃ¡nyhibÃ¡t kaphatunk az SSL tanÃºsÃ­tvÃ¡ny valÃ³disÃ¡gÃ¡tÃ³l
+        // fÃ¼ggetlenÃ¼l, ez az alÃ¡bbi CURL paramÃ©ter Ã¡llÃ­tÃ¡ssal kikÃ¼szÃ¶bÃ¶lhetÅ‘,
+        // ilyenkor nincs kÃ¼lÃ¶n SSL ellenÅ‘rzÃ©s:
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        // POST-ban küldjük az adatokat
+        // POST-ban kÃ¼ldjÃ¼k az adatokat
         curl_setopt($ch, CURLOPT_POST, true);
-        // Kérjük a HTTP headert a válaszba, fontos információk vannak benne
+        // KÃ©rjÃ¼k a HTTP headert a vÃ¡laszba, fontos informÃ¡ciÃ³k vannak benne
         curl_setopt($ch, CURLOPT_HEADER, true);
-        // változóban tároljuk a válasz tartalmát, nem írjuk a kimenetbe
+        // vÃ¡ltozÃ³ban tÃ¡roljuk a vÃ¡lasz tartalmÃ¡t, nem Ã­rjuk a kimenetbe
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // Kb így néz ki CURLFile használatával:
-            curl_setopt($ch, CURLOPT_POSTFIELDS, array($curlName=>new CURLFile($xmlfile, 'application/xml', 'filenev')));
-        // És még egy opciót szükséges ilyenkor beállítani:
-            curl_setopt($ch, CURLOPT_SAFE_UPLOAD, true);
-//        curl_setopt($ch, CURLOPT_POSTFIELDS, array('action-xmlagentxmlfile'=>'@' . $xmlfile));
-        // 30 másodpercig tartjuk fenn a kapcsolatot (ha valami bökkenõ volna)
+        // Kb Ã­gy nÃ©z ki CURLFile hasznÃ¡latÃ¡val:
+
+
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS, array($curlName=>new \CURLFile($fullPathFilename, 'application/xml', 'filenev')));
+
+
+        // Ã‰s mÃ©g egy opciÃ³t szÃ¼ksÃ©ges ilyenkor beÃ¡llÃ­tani:
+        curl_setopt($ch, CURLOPT_SAFE_UPLOAD, true);
+//        curl_setopt($ch, CURLOPT_POSTFIELDS, array('action-xmlagentxmlfile'=>'@' . $fullPathFilename));
+        // 30 mÃ¡sodpercig tartjuk fenn a kapcsolatot (ha valami bÃ¶kkenÅ‘ volna)
         curl_setopt($ch, CURLOPT_TIMEOUT, 300);
-        // Itt állítjuk be, hogy az érkezõ cookie a $cookie_file-ba kerüljön mentésre
+        // Itt Ã¡llÃ­tjuk be, hogy az Ã©rkezÅ‘ cookie a $cookie_file-ba kerÃ¼ljÃ¶n mentÃ©sre
         curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
-        // Ha van már cookie file-unk, és van is benne valami, elküldjük a Számlázz.hu-nak
+        // Ha van mÃ¡r cookie file-unk, Ã©s van is benne valami, elkÃ¼ldjÃ¼k a SzÃ¡mlÃ¡zz.hu-nak
         if (file_exists($cookie_file) && filesize($cookie_file) > 0) {
             curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
         }
 
-        // elküldjük a kérést a Számlázz.hu felé, és eltároljuk a választ
+        // elkÃ¼ldjÃ¼k a kÃ©rÃ©st a SzÃ¡mlÃ¡zz.hu felÃ©, Ã©s eltÃ¡roljuk a vÃ¡laszt
         $agent_response = curl_exec($ch);
 
 
 
-        // kiolvassuk a curl-ból volt-e hiba
+        // kiolvassuk a curl-bÃ³l volt-e hiba
         $http_error = curl_error($ch);
-        // ezekben a változókban tároljuk a szétbontott választ
+        // ezekben a vÃ¡ltozÃ³kban tÃ¡roljuk a szÃ©tbontott vÃ¡laszt
         $agent_header = '';
         $agent_body = '';
         $agent_http_code = '';
 
-        // lekérjük a válasz HTTP_CODE-ját, ami ha 200, akkor a http kommunikáció rendben volt
-        // ettõl még egyáltalán nem biztos, hogy a számla elkészült
+
+        // lekÃ©rjÃ¼k a vÃ¡lasz HTTP_CODE-jÃ¡t, ami ha 200, akkor a http kommunikÃ¡ciÃ³ rendben volt
+        // ettÅ‘l mÃ©g egyÃ¡ltalÃ¡n nem biztos, hogy a szÃ¡mla elkÃ©szÃ¼lt
         $agent_http_code = curl_getinfo($ch,CURLINFO_HTTP_CODE);
 
-        // a válasz egy byte kupac, ebbõl az elsõ "header_size" darab byte lesz a header
+        // a vÃ¡lasz egy byte kupac, ebbÅ‘l az elsÅ‘ "header_size" darab byte lesz a header
         $header_size = curl_getinfo($ch,CURLINFO_HEADER_SIZE);
 
-        // a header tárolása, ebben lesznek majd a számlaszám, bruttó nettó összegek, errorcode, stb.
+        // a header tÃ¡rolÃ¡sa, ebben lesznek majd a szÃ¡mlaszÃ¡m, bruttÃ³ nettÃ³ Ã¶sszegek, errorcode, stb.
         $agent_header = substr($agent_response, 0, $header_size);
 
-        // a body tárolása, ez lesz a pdf, vagy szöveges üzenet
+        // a body tÃ¡rolÃ¡sa, ez lesz a pdf, vagy szÃ¶veges Ã¼zenet
         $agent_body = substr( $agent_response, $header_size );
 
-        // a curl már nem kell, lezárjuk
+
+
+
+        // a curl mÃ¡r nem kell, lezÃ¡rjuk
         curl_close($ch);
 
-        // a header soronként tartalmazza az információkat, egy tömbbe teszük a külön sorokat
+        // a header soronkÃ©nt tartalmazza az informÃ¡ciÃ³kat, egy tÃ¶mbbe teszÃ¼k a kÃ¼lÃ¶n sorokat
         $header_array = explode("\n", $agent_header);
 
-        // ezt majd true-ra állítjuk ha volt hiba
+        // ezt majd true-ra Ã¡llÃ­tjuk ha volt hiba
         $volt_hiba = false;
 
-        // ebben lesznek a hiba információk, plusz a bodyban
+        // ebben lesznek a hiba informÃ¡ciÃ³k, plusz a bodyban
         $agent_error = '';
         $agent_error_code = '';
 
+        if(!$volt_hiba && $schema->curlName == "action-szamla_agent_xml")
+        return simplexml_load_string($agent_body);
 
 
-        // menjünk végig a header sorokon, ami "szlahu"-val kezdõdik az érdekes nekünk és írjuk ki
+
+
+
+        // menjÃ¼nk vÃ©gig a header sorokon, ami "szlahu"-val kezdÅ‘dik az Ã©rdekes nekÃ¼nk Ã©s Ã­rjuk ki
         foreach ($header_array as $val) {
           if (substr($val, 0, strlen('szlahu')) === 'szlahu') {
 //            echo urldecode($val).'<br>';
 
-          if (strstr($val,'szlahu_szamlaszam')) {  // számlaszám kinyerése válasz üzenetbõl
+          if (strstr($val,'szlahu_szamlaszam')) {  // szÃ¡mlaszÃ¡m kinyerÃ©se vÃ¡lasz Ã¼zenetbÅ‘l
             $szamlaszam_ = explode(":",$val);
             $szamlaszam = substr(str_replace(" ","",$szamlaszam_['1']),0,-1);
           }
 
-          if (strstr($val,'szlahu_nettovegosszeg')) {  // NETTO kinyerése válasz üzenetbõl
+          if (strstr($val,'szlahu_nettovegosszeg')) {  // NETTO kinyerÃ©se vÃ¡lasz Ã¼zenetbÅ‘l
             $netto_ = explode(":",$val);
             $netto = substr(str_replace(" ","",$netto_['1']),0,-1);
           }
 
-          if (strstr($val,'szlahu_bruttovegosszeg')) {  // BRUTTO kinyerése válasz üzenetbõl
+          if (strstr($val,'szlahu_bruttovegosszeg')) {  // BRUTTO kinyerÃ©se vÃ¡lasz Ã¼zenetbÅ‘l
             $brutto_ = explode(":",$val);
             $brutto = substr(str_replace(" ","",$brutto_['1']),0,-1);
           }
 
-          if (strstr($val,'szlahu_vevoifiokurl')) {  // BRUTTO kinyerése válasz üzenetbõl
+          if (strstr($val,'szlahu_vevoifiokurl')) {  // BRUTTO kinyerÃ©se vÃ¡lasz Ã¼zenetbÅ‘l
             $vevourl_ = explode(":",$val);
             $vevourl = substr(str_replace(" ","",$vevourl_['1']),0,-1);
           }
 
 
-            // megvizsgáljuk, hogy volt-e hiba
+            // megvizsgÃ¡ljuk, hogy volt-e hiba
             if (substr($val, 0, strlen('szlahu_error:')) === 'szlahu_error:') {
               // sajnos volt
               $volt_hiba = true;
@@ -235,22 +171,25 @@ class SzamlazzhuApi
           }
         }
 
-        // ha volt http hiba dobunk egy kivételt
+
+        // ha volt http hiba dobunk egy kivÃ©telt
         if ( $http_error != "" )
         {
-          echo 'Http hiba történt:'.$http_error;
-  //        throw new Exception('Hiba történt:'.$http_error);
+          echo 'Http hiba tÃ¶rtÃ©nt:'.$http_error;
+  //        throw new Exception('Hiba tÃ¶rtÃ©nt:'.$http_error);
         }
+
+
 
         if ($volt_hiba) {
 
-          // ha a számla nem készült el kiírjuk amit lehet
-          $outError = 'Agent hibakód: '.$agent_error_code.'<br>';
-          $outError = $outError.  'Agent hibaüzenet: '.urldecode($agent_error).'<br>';
-//          $outError = $outError. 'Agent válasz: '.urldecode($agent_body).'<br>';
+          // ha a szÃ¡mla nem kÃ©szÃ¼lt el kiÃ­rjuk amit lehet
+          $outError = 'Agent hibakÃ³d: '.$agent_error_code.'<br>';
+          $outError = $outError.  'Agent hibaÃ¼zenet: '.urldecode($agent_error).'<br>';
+//          $outError = $outError. 'Agent vÃ¡lasz: '.urldecode($agent_body).'<br>';
 
-          // dobunk egy kivételt
-//          throw new Exception('Számlakészítés sikertelen:'.$agent_error_code);
+          // dobunk egy kivÃ©telt
+//          throw new Exception('SzÃ¡mlakÃ©szÃ­tÃ©s sikertelen:'.$agent_error_code);
             $out['error'] = $outError;
 
             return $out;
@@ -258,13 +197,9 @@ class SzamlazzhuApi
 
         } else {
 
-          // ha nem volt hiba feldolgozzuk a válaszban érkezett pdf-et vagy szöveges információt
+          // ha nem volt hiba feldolgozzuk a vÃ¡laszban Ã©rkezett pdf-et vagy szÃ¶veges informÃ¡ciÃ³t
 
-            // ha nem kértük a pdf-et akkor szöveges információ jött a válaszban, ezt kiírjuk
-
-            if($adatok['fejlec']['fizetve']=='true')$adatok['fejlec']['fizetve'] = 1;
-            if($adatok['fejlec']['fizetve']=='false')$adatok['fejlec']['fizetve'] = 0;
-
+            // ha nem kÃ©rtÃ¼k a pdf-et akkor szÃ¶veges informÃ¡ciÃ³ jÃ¶tt a vÃ¡laszban, ezt kiÃ­rjuk
 
             $out['error'] = $outError;
             $out['szamlaszam'] = $szamlaszam;
@@ -272,247 +207,6 @@ class SzamlazzhuApi
 
           return $out;
         }
-    }
-
-public static function SzamlaKifGenerateXml($adatok){
-        $genXmlOut = '<?xml version="1.0" encoding="UTF-8"?>
-        <xmlszamlakifiz xmlns="http://www.szamlazz.hu/xmlszamlakifiz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamlakifiz xmlszamlakifiz.xsd ">
-          <beallitasok>
-            <felhasznalo>'.Yii::$app->params['szamlazzhu']['felhasznalonev'].'</felhasznalo>
-            <jelszo>'.Yii::$app->params['szamlazzhu']['jelszo'].'</jelszo>
-            <szamlaszam>'.$adatok['beallitasok']['szamlaszam'].'</szamlaszam>
-            <additiv>'.$adatok['beallitasok']['additiv'].'</additiv>
-            <aggregator>'.$adatok['beallitasok']['aggregator'].'</aggregator>
-          </beallitasok>
-          <kifizetes>
-            <datum>'.$adatok['kifizetes']['datum'].'</datum>
-            <jogcim>'.$adatok['kifizetes']['jogcim'].'</jogcim>
-            <osszeg>'.$adatok['kifizetes']['osszeg'].'</osszeg>
-          </kifizetes>';
-          $genXmlOut = $genXmlOut.'
-        </xmlszamlakifiz>';
-
-                $dir = __dir__."/../uploads/generateXml/".date(Y)."/".date(m)."/";
-                $filename = date(YmdHis)."_szamlakif_".rand(1000,9999).".xml";
-                MyFunctions::DirCheckCreateYearMonth("generateXml");  /// ellenõrzi létezik az adott upload könyvtárban az év és a hónap amibe majd írja az xml-t
-                $handle = fopen($dir.$filename,"a");
-                $xmlWrite = fwrite($handle,$genXmlOut);
-                fclose($handle);
-                if($xmlWrite)return $dir.$filename;
-
-            }
-
-           public static function SzamlaDijDelGenerateXml($adatok){
-        $genXmlOut = '<?xml version="1.0" encoding="UTF-8"?>
-        <xmlszamladbkdel xmlns="http://www.szamlazz.hu/xmlszamladbkdel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamladbkdel xmlszamladbkdel.xsd ">
-            <beallitasok>
-                <felhasznalo>'.Yii::$app->params['szamlazzhu']['felhasznalonev'].'</felhasznalo>
-                <jelszo>'.Yii::$app->params['szamlazzhu']['jelszo'].'</jelszo>
-            </beallitasok>
-            <fejlec>
-                <szamlaszam>'.$adatok['fejlec']['szamlaszam'].'</szamlaszam>
-                <rendelesszam>'.$adatok['fejlec']['rendelesszam'].'</rendelesszam>
-            </fejlec>
-        </xmlszamladbkdel>';
-
-                $dir = __dir__."/../uploads/generateXml/".date(Y)."/".date(m)."/";
-                $filename = date(YmdHis)."_szamlakif_".rand(1000,9999).".xml";
-                MyFunctions::DirCheckCreateYearMonth("generateXml");  /// ellenõrzi létezik az adott upload könyvtárban az év és a hónap amibe majd írja az xml-t
-                $handle = fopen($dir.$filename,"a");
-                $xmlWrite = fwrite($handle,$genXmlOut);
-                fclose($handle);
-                if($xmlWrite)return $dir.$filename;
-
-            }
-
-
-            public static function SzamlaSztornoGenerateXml($adatok){
-        $genXmlOut = '<?xml version="1.0" encoding="UTF-8"?>
-        <xmlszamlast xmlns="http://www.szamlazz.hu/xmlszamlast" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamlast xmlszamlast.xsd ">
-          <beallitasok>
-            <felhasznalo>'.Yii::$app->params['szamlazzhu']['felhasznalonev'].'</felhasznalo>
-            <jelszo>'.Yii::$app->params['szamlazzhu']['jelszo'].'</jelszo>
-            <eszamla>'.$adatok['beallitasok']['eszamla'].'</eszamla>
-            <kulcstartojelszo>'.$adatok['beallitasok']['kulcstartojelszo'].'</kulcstartojelszo>
-            <szamlaLetoltes>'.$adatok['beallitasok']['szamlaLetoltes'].'</szamlaLetoltes>
-            <szamlaLetoltesPld>'.$adatok['beallitasok']['szamlaLetoltesPld'].'</szamlaLetoltesPld>
-            <aggregator>'.$adatok['beallitasok']['aggregator'].'</aggregator>
-          </beallitasok>
-          <fejlec>
-            <szamlaszam>'.$adatok['fejlec']['szamlaszam'].'</szamlaszam>
-            <keltDatum>'.$adatok['fejlec']['keltDatum'].'</keltDatum>
-            <teljesitesDatum>'.$adatok['fejlec']['teljesitesDatum'].'</teljesitesDatum>
-            <tipus>SS</tipus>
-          </fejlec>
-          <elado>
-            <emailReplyto>'.$adatok['elado']['emailReplyto'].'</emailReplyto>
-            <emailTargy>'.$adatok['elado']['emailTargy'].'</emailTargy>
-            <emailSzoveg>
-        '.$adatok['elado']['emailSzoveg'].'    </emailSzoveg>
-          </elado>
-          <vevo>
-            <email>'.$adatok['vevo']['email'].'</email>
-          </vevo>
-        </xmlszamlast>';
-
-        $dir = __dir__."/../uploads/generateXml/".date(Y)."/".date(m)."/";
-        $filename = date(YmdHis)."_szamlast_".rand(1000,9999).".xml";
-        MyFunctions::DirCheckCreateYearMonth("generateXml");  /// ellenõrzi létezik az adott upload könyvtárban az év és a hónap amibe majd írja az xml-t
-        $handle = fopen($dir.$filename,"a");
-        $xmlWrite = fwrite($handle,$genXmlOut);
-        fclose($handle);
-        if($xmlWrite)return $dir.$filename;
-
-    }
-
-    public static function stornoSzamlaSzamlaszam($szamlaszam){
-
-                $Adatoksztorno =
-                ['beallitasok'=>
-                        ['felhasznalo'=>Yii::$app->params["szamlazzhu"]["felhasznalonev"],
-                        'jelszo'=>Yii::$app->params["szamlazzhu"]["jelszo"],
-                        'eszamla'=>0,
-                        'kulcstartojelszo'=>'',
-                        'szamlaLetoltes'=>'true',
-                        'szamlaLetoltesPld'=>'1',
-                        'aggregator'=>''],
-                    'fejlec'=>
-                        ['keltDatum'=>date('Y-m-d'),
-                        'teljesitesDatum'=>date('Y-m-d'),
-                        'szamlaszam'=>$szamlaszam,
-                        'tipus'=>'SS'
-                        ],
-                    'elado'=>
-                        ['emailReplyto'=>'',
-                        'emailTargy'=>'',
-                        'emailSzoveg'=>''],
-                    'vevo'=>
-                        ['email'=>'',
-                        ],
-                        ];
-                        $szamlaKeszites = Szamlazzhu::createSzamla(3,$Adatoksztorno);
-                        return $szamlaKeszites;
-    }
-
-
-
-
-    public static function stornoSzamla($id){
-
-        $szamla = SzlKimeno::findOne($id);
-
-        if($szamla->elektronikus == 1)$eszamla = 1;
-        else $eszamla = 0;
-
-        $Adatoksztorno =
-        ['beallitasok'=>
-            ['felhasznalo'=>Yii::$app->params["szamlazzhu"]["felhasznalonev"],
-            'jelszo'=>Yii::$app->params["szamlazzhu"]["jelszo"],
-            'eszamla'=>$eszamla,
-            'kulcstartojelszo'=>'',
-            'szamlaLetoltes'=>'true',
-            'szamlaLetoltesPld'=>'1',
-            'aggregator'=>''],
-          'fejlec'=>
-            ['keltDatum'=>date('Y-m-d'),
-            'teljesitesDatum'=>substr($szamla->teljesites,0,10),
-            'szamlaszam'=>$szamla->szamlaszam,
-            'tipus'=>'SS'
-            ],
-          'elado'=>
-            ['emailReplyto'=>'',
-            'emailTargy'=>'',
-            'emailSzoveg'=>''],
-          'vevo'=>
-            ['email'=>'',
-            ],
-            ];
-            $szamlaKeszites = Szamlazzhu::createSzamla(3,$Adatoksztorno);
-
-        return $szamlaKeszites['szamlaszam'];
-
-    }
-
-    public static function stornoSzallito($id){
-
-            $szamla = SzlKimenoszallito::findOne($id);
-
-            $Adatoksztorno =
-            ['beallitasok'=>
-                ['felhasznalo'=>Yii::$app->params["szamlazzhu"]["felhasznalonev"],
-                'jelszo'=>Yii::$app->params["szamlazzhu"]["jelszo"],
-                'eszamla'=>'false',
-                'kulcstartojelszo'=>'',
-                'szamlaLetoltes'=>'true',
-                'szamlaLetoltesPld'=>'1',
-                'aggregator'=>''],
-              'fejlec'=>
-                ['keltDatum'=>date('Y-m-d'),
-                'teljesitesDatum'=>substr($szamla->teljesites,0,10),
-                'szamlaszam'=>$szamla->szamlaszam,
-                'tipus'=>'SS'
-                ],
-              'elado'=>
-                ['emailReplyto'=>'',
-                'emailTargy'=>'',
-                'emailSzoveg'=>''],
-              'vevo'=>
-                ['email'=>'',
-                ],
-                ];
-                $szamlaKeszites = Szamlazzhu::createSzamla(3,$Adatoksztorno);
-                return $szamlaKeszites['szamlaszam'];
-    }
-
-
-
-    public static function kiegySzamla($id){
-
-                $Adatokkiegy =
-                [
-                'beallitasok'=>
-                    ['szamlaszam'=>$szamla->szamlaszam,
-                    'additiv'=>'false',
-                    'aggregator'=>''],
-                'kifizetes'=>
-                    ['datum'=>date('Y-m-d'),
-                    'jogcim'=>$fizetesimod,
-                    'osszeg'=>$szamla->kiegyenlitve,]
-                ];
-                $szamlaKeszites = Szamlazzhu::createSzamla(2,$Adatokkiegy);
-
-
-
-            return $szamlaKeszites;
-
-    }
-
-
-    public static function DijDelSzamla($id){
-
-
-            $szamla = SzlKimeno::findOne($id);
-            $szamla->kifizetes = $_POST['kiegyDate'];
-
-
-                $Adatokkiegy =
-                [
-                'fejlec'=>
-                    [
-                    'szamlaszam'=>$szamla->szamlaszam,
-                    'rendelesszam'=>''
-                     ],
-                ];
-            $szamlaKeszites = Szamlazzhu::createSzamla(10,$Adatokkiegy);
-
-            $szamlaKeszites = $szamlaKeszites." ";  //hozzáadok egy spacet hogy sose legyen üres.
-
-            if(!strstr($szamlaKeszites,"Agent hibakód"))
-            $szamla->rontott = 1;
-
-            $ok = $szamla->update(false);
-            return $ok;
-
     }
 
     public static function stripInvalidXml($value)
