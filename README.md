@@ -29,7 +29,7 @@ General use can be tried through the following examples:
         $invoiceCreate = new SzamlazzhuApi;
         $schema = new InvoiceSchema;
 	
-        $schema->type = 1;  // invoice set payed
+        $schema->type = 1;  // invoice
 		/****** Invoice types this method 
 		* 5 - Pre Invoice
 		* 6 - Final Invoice
