@@ -209,7 +209,7 @@ class SzamlazzhuApi
         }
     }
 
-    public function stripInvalidXml($value)
+    public static function stripInvalidXml($value)
     {
         $ret = "";
         $current;
@@ -237,7 +237,8 @@ class SzamlazzhuApi
             }
         }
         return $ret;
-    } 
+    }
+ 
 
 
 
