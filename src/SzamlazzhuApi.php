@@ -237,8 +237,7 @@ class SzamlazzhuApi
             }
         }
         return $ret;
-    }
- 
+    } 
 
 
 
