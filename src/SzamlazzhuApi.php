@@ -209,7 +209,7 @@ class SzamlazzhuApi
         }
     }
 
-    public static function stripInvalidXml($value)
+    public static function _stripInvalidXml($value)
     {
         $ret = "";
         $current;
