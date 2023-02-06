@@ -26,102 +26,106 @@ General use can be tried through the following examples:
 - Create Invoice
 
 	```php
-        $invoiceCreate = new SzamlazzhuApi;
-        $schema = new InvoiceSchema;
+  use vadgab\Yii2SzamlazzhuApi\SzamlazzhuApi;
+  use vadgab\Yii2SzamlazzhuApi\Schema\InvoiceSchema;      
 	
-        $schema->type = 1;  // invoice
-		/****** Invoice types this method 
-		* 5 - Pre Invoice
-		* 6 - Final Invoice
-		* 7 - Corrective Invoice 
-		* 8 - Pro forma (díjbekérő)
-		* 9 - Delivery Invoice
-		*******/
+  $invoiceCreate = new SzamlazzhuApi;
 	
-        $schema->defineInvoiceType();
+	$schema = new InvoiceSchema;
 	
-        /* adding settings value */
+	$schema->type = 1;  // invoice
+	/****** Invoice types this method 
+	     * 5 - Pre Invoice
+	     * 6 - Final Invoice
+	     * 7 - Corrective Invoice 
+       * 8 - Pro forma (díjbekérő)
+	     * 9 - Delivery Invoice
+  *******/
 	
-        $schema->settings['eszamla'] = "false";
-        $schema->settings['szamlaLetoltes'] = "true";
-        $schema->settings['szamlaLetoltesPld'] = "1";
-        $schema->settings['valaszVerzio'] = "1";
-        $schema->settings['aggregator'] = "";
+  $schema->defineInvoiceType();
+  
+  /* adding settings value */
+  
+  $schema->settings['eszamla'] = "false";
+	$schema->settings['szamlaLetoltes'] = "true";
+  $schema->settings['szamlaLetoltesPld'] = "1";
+	$schema->settings['valaszVerzio'] = "1";
+  $schema->settings['aggregator'] = "";
+  
+  /* adding header value */
+  
+  $schema->header['keltDatum'] = date('Y-m-d');
+  $schema->header['teljesitesDatum'] = date('Y-m-d');
+  $schema->header['fizetesiHataridoDatum'] = date('Y-m-d',mktime(0,0,0,date('m'),date('d')+8,date('Y')));
+  $schema->header['fizmod'] = "Átutalás";
+  $schema->header['penznem'] = "Ft";
+  $schema->header['szamlaNyelve'] = "hu";
+	$schema->header['megjegyzes'] = "Számla teszt megjegyzés ";
+  $schema->header['arfolyamBank'] = "MNB";
+	$schema->header['arfolyam'] = "1";
+  $schema->header['fizetve'] = "false";
+  
+  /* adding seller value */
+  
+  $schema->seller['bank'] = "";
+  $schema->seller['bankszamlaszam'] = "11111111-22222222-33333333";
+	$schema->seller['emailReplyto'] = "info@test.com";
+  $schema->seller['emailTargy'] = "Teszt tárgy";
+	$schema->seller['emailSzoveg'] = "Teszt szöveg";
+  $schema->seller['alairoNeve'] = "Eladó aláírója";
+  
+  /* adding buyer value */
+  
+  $schema->buyer['nev'] = "Teszt cég minta";
+  $schema->buyer['orszag'] = "Magyarország";
+  $schema->buyer['irsz'] = "1156";
+  $schema->buyer['telepules'] = "Budapest";
+  $schema->buyer['cim'] = "Drégelyvár utca 6";
+  $schema->buyer['email'] = "";
+  $schema->buyer['sendEmail'] = "false";
+  $schema->buyer['adoszam'] = "11111111-42-1";
+  $schema->buyer['adoszamEU'] = "HU11111111";
+  $schema->buyer['postazasiNev'] = "";
+  $schema->buyer['postazasiIrsz'] = "";
+	$schema->buyer['postazasiTelepules'] = "";
+  $schema->buyer['postazasiCim'] = "";
+	$schema->buyer['alairoNeve'] = "Vevő aláírója";
+  $schema->buyer['megjegyzes'] = "Teszt megjegyzés 2";
+  
+  /* adding items 1 value */
+  
+  $schema->items['megnevezes'] = "Teszt termék 1";
+  $schema->items['mennyiseg'] = "1";
+  $schema->items['mennyisegiEgyseg'] = "2000";
+  $schema->items['afakulcs'] = "AAM";
+  $schema->items['nettoEgysegar'] = "2000";
+	$schema->items['nettoErtek'] = "2000";
+  $schema->items['bruttoErtek'] = "2000";
+	$schema->items['megjegyzes'] = "";
+  $schema->InvoiceAddItems();
+  
+  /* adding items 2 value */
+  
+  $schema->items['megnevezes'] = "Teszt termék 2";
+  $schema->items['mennyiseg'] = "1";
+  $schema->items['mennyisegiEgyseg'] = "1000";
+  $schema->items['afakulcs'] = "AAM";
+  $schema->items['nettoEgysegar'] = "1000";
+	$schema->items['nettoErtek'] = "1000";
+  $schema->items['bruttoErtek'] = "1000";
+	$schema->items['megjegyzes'] = "";
+  $schema->InvoiceAddItems();
 	
-        /* adding header value */
+  /* Generate XML */
 	
-        $schema->header['keltDatum'] = date('Y-m-d');
-        $schema->header['teljesitesDatum'] = date('Y-m-d');
-        $schema->header['fizetesiHataridoDatum'] = date('Y-m-d',mktime(0,0,0,date('m'),date('d')+8,date('Y')));
-        $schema->header['fizmod'] = "Átutalás";
-        $schema->header['penznem'] = "Ft";
-        $schema->header['szamlaNyelve'] = "hu";
-        $schema->header['megjegyzes'] = "Számla teszt megjegyzés ";
-        $schema->header['arfolyamBank'] = "MNB";
-        $schema->header['arfolyam'] = "1";
-        $schema->header['fizetve'] = "false";
+  $xml = $schema->InvoiceGenerateXml();
 	
-        /* adding seller value */
+  /* Invoice payed send and process */
 	
-        $schema->seller['bank'] = "";
-        $schema->seller['bankszamlaszam'] = "11111111-22222222-33333333";
-        $schema->seller['emailReplyto'] = "info@test.com";
-        $schema->seller['emailTargy'] = "Teszt tárgy";
-        $schema->seller['emailSzoveg'] = "Teszt szöveg";
-        $schema->seller['alairoNeve'] = "Eladó aláírója";
+	$out = $invoiceCreate->createSzamla($schema);
 	
-        /* adding buyer value */
-	
-        $schema->buyer['nev'] = "Teszt cég minta";
-        $schema->buyer['orszag'] = "Magyarország";
-        $schema->buyer['irsz'] = "1156";
-        $schema->buyer['telepules'] = "Budapest";
-        $schema->buyer['cim'] = "Drégelyvár utca 6";
-        $schema->buyer['email'] = "";
-        $schema->buyer['sendEmail'] = "false";
-        $schema->buyer['adoszam'] = "11111111-42-1";
-        $schema->buyer['adoszamEU'] = "HU11111111";
-        $schema->buyer['postazasiNev'] = "";
-        $schema->buyer['postazasiIrsz'] = "";
-        $schema->buyer['postazasiTelepules'] = "";
-        $schema->buyer['postazasiCim'] = "";
-        $schema->buyer['alairoNeve'] = "Vevő aláírója";
-        $schema->buyer['megjegyzes'] = "Teszt megjegyzés 2";
-	
-        /* adding items 1 value */
-	
-        $schema->items['megnevezes'] = "Teszt termék 1";
-        $schema->items['mennyiseg'] = "1";
-        $schema->items['mennyisegiEgyseg'] = "2000";
-        $schema->items['afakulcs'] = "AAM";
-        $schema->items['nettoEgysegar'] = "2000";
-        $schema->items['nettoErtek'] = "2000";
-        $schema->items['bruttoErtek'] = "2000";
-        $schema->items['megjegyzes'] = "";
-        $schema->InvoiceAddItems();
-	
-        /* adding items 2 value */
-	
-        $schema->items['megnevezes'] = "Teszt termék 2";
-        $schema->items['mennyiseg'] = "1";
-        $schema->items['mennyisegiEgyseg'] = "1000";
-        $schema->items['afakulcs'] = "AAM";
-        $schema->items['nettoEgysegar'] = "1000";
-        $schema->items['nettoErtek'] = "1000";
-        $schema->items['bruttoErtek'] = "1000";
-        $schema->items['megjegyzes'] = "";
-        $schema->InvoiceAddItems();
-	
-        /* Generate XML */
-	
-        $xml = $schema->InvoiceGenerateXml();
-	
-        /* Invoice payed send and process */
-	
-        $out = $invoiceCreate->createSzamla($schema);
-	
-        var_dump($out);
-		/***** output 
+	var_dump($out);
+	/***** output 
 		* $out['error']
 		* $out['szamlaszam']
 		* $out['agent_body'] //PDF
@@ -131,113 +135,126 @@ General use can be tried through the following examples:
 - Add Invoice payed
 
   ```php
-          $invoiceCreate = new SzamlazzhuApi;
-          $schema = new InvoiceSchema;
+  use vadgab\Yii2SzamlazzhuApi\SzamlazzhuApi;
+  use vadgab\Yii2SzamlazzhuApi\Schema\InvoiceSchema;      
   
-          $schema->type = 2;  // invoice set payed
+  $invoiceCreate = new SzamlazzhuApi;	
+  $schema = new InvoiceSchema;
   
-          $schema->defineInvoiceType();
+  $schema->type = 2;  // invoice set payed
   
-          $schema->settings['szamlaszam'] = '78987-2022-326';
-          $schema->settings['additiv'] = 'false';
+  $schema->defineInvoiceType();
   
-          $schema->payed['datum'] = '2022-11-16';
-          $schema->payed['jogcim'] = 'This invoice is payed ';
-          $schema->payed['osszeg'] = '2000';
-          $schema->InvoiceAddPayed();
-          $schema->payed['datum'] = '2022-11-16';
-          $schema->payed['jogcim'] = 'This invoice is payed ';
-          $schema->payed['osszeg'] = '2000';
-          $schema->InvoiceAddPayed();
-          /* Generate XML */
+  $schema->settings['szamlaszam'] = '78987-2022-326';
+  $schema->settings['additiv'] = 'false';
   
-          $xml = $schema->InvoicePayedGenerateXml();
+  $schema->payed['datum'] = '2022-11-16';
+  $schema->payed['jogcim'] = 'This invoice is payed ';
+  $schema->payed['osszeg'] = '2000';
+  $schema->InvoiceAddPayed();
+  $schema->payed['datum'] = '2022-11-16';
+  $schema->payed['jogcim'] = 'This invoice is payed ';
+  $schema->payed['osszeg'] = '2000';
+  $schema->InvoiceAddPayed();
+  /* Generate XML */
   
-          /* Invoice payed send and process */
+  $xml = $schema->InvoicePayedGenerateXml();
   
-          $out = $invoiceCreate->createSzamla($schema);
+  /* Invoice payed send and process */
   
-          var_dump($out);
+  $out = $invoiceCreate->createSzamla($schema);
+  
+  var_dump($out);
   ```
 
 
 - Create Storno invoice
 
   ```php
-          $invoiceCreate = new SzamlazzhuApi;
-          $schema = new InvoiceSchema;
+  use vadgab\Yii2SzamlazzhuApi\SzamlazzhuApi;
+  use vadgab\Yii2SzamlazzhuApi\Schema\InvoiceSchema;      
   
-          $schema->type = 3;  // Create strono invoice 
+  $invoiceCreate = new SzamlazzhuApi;
+  $schema = new InvoiceSchema;
   
-          $schema->defineInvoiceType();
+  $schema->type = 3;  // Create strono invoice 
   
-          /* adding settings value */
+  $schema->defineInvoiceType();
   
-          $schema->settings['eszamla'] = "false";
-          $schema->settings['szamlaLetoltes'] = "true";
-          $schema->settings['szamlaLetoltesPld'] = "1";
-          $schema->settings['aggregator'] = "";
+  /* adding settings value */
   
-          /* adding header value */
+  $schema->settings['eszamla'] = "false";
+  $schema->settings['szamlaLetoltes'] = "true";
+  $schema->settings['szamlaLetoltesPld'] = "1";
+  $schema->settings['aggregator'] = "";
   
-          $schema->header['keltDatum'] = date('Y-m-d');
-          $schema->header['teljesitesDatum'] = date('Y-m-d');
-          $schema->header['szamlaszam'] = "78987-2022-328";
+  /* adding header value */
   
-          /* adding seller value */
+  $schema->header['keltDatum'] = date('Y-m-d');
+  $schema->header['teljesitesDatum'] = date('Y-m-d');
+  $schema->header['szamlaszam'] = "78987-2022-328";
   
-          $schema->seller['emailReplyto'] = "info@test.com";
-          $schema->seller['emailTargy'] = "Teszt tárgy";
-          $schema->seller['emailSzoveg'] = "Teszt szöveg";
+  /* adding seller value */
   
-          /* adding buyer value */
+  $schema->seller['emailReplyto'] = "info@test.com";
+  $schema->seller['emailTargy'] = "Teszt tárgy";
+  $schema->seller['emailSzoveg'] = "Teszt szöveg";
   
-          $schema->buyer['email'] = "teszt@teszt.com";
+  /* adding buyer value */
   
-          /* Generate XML */
+  $schema->buyer['email'] = "teszt@teszt.com";
   
-          $xml = $schema->InvoiceStornoGenerateXml();
+  /* Generate XML */
   
-          /* Invoice payed send and process */
+  $xml = $schema->InvoiceStornoGenerateXml();
   
-          $out = $invoiceCreate->createSzamla($schema);
+  /* Invoice payed send and process */
   
-          var_dump($out);
-          /***** output 
+  $out = $invoiceCreate->createSzamla($schema);
+  
+  var_dump($out);
+  /***** output 
   		* $out['error']
   		* $out['szamlaszam']
   		* $out['agent_body'] //PDF
   		*****/
   ```
-
+  
 - Create delete Pro forma 
 
   ```php
-          $invoiceCreate = new SzamlazzhuApi;
-          $schema = new InvoiceSchema;
+  use vadgab\Yii2SzamlazzhuApi\SzamlazzhuApi;
+  use vadgab\Yii2SzamlazzhuApi\Schema\InvoiceSchema;      
   
-          $schema->type = 10;  // invoice set delete Pro Forma
+  $invoiceCreate = new SzamlazzhuApi;
+  $schema = new InvoiceSchema;
   
-          $schema->defineInvoiceType();
+  $schema->type = 10;  // invoice set delete Pro Forma
   
-          /* adding header value */
+  $schema->defineInvoiceType();
   
-          $schema->header['szamlaszam'] = "D-78987-277";
+  /* adding header value */
+  
+  $schema->header['szamlaszam'] = "D-78987-277";
   //        $schema->header['rendelesszam'] = "";
   
-          /* Generate XML */
+  /* Generate XML */
   
-          $xml = $schema->InvoiceProFormaDeleteGenerateXml();
+  $xml = $schema->InvoiceProFormaDeleteGenerateXml();
   
-          /* Invoice payed send and process */
+  /* Invoice payed send and process */
   
-          $out = $invoiceCreate->createSzamla($schema);
+  $out = $invoiceCreate->createSzamla($schema);
   
   ```
 
 - Get invoice data
 
   ```php
+  use vadgab\Yii2SzamlazzhuApi\SzamlazzhuApi;
+  use vadgab\Yii2SzamlazzhuApi\Schema\InvoiceSchema;      
+  
+  
   $invoiceCreate = new SzamlazzhuApi;
   $schema = new InvoiceSchema;
   
