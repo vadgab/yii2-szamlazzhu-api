@@ -22,7 +22,7 @@ class SzamlazzhuApi
 
 
 
-        // cookie file teljes elérési útja a szerveren
+        // Cookie File Full Acquisition on the server
 
         $cookie_file = __dir__."/../temp/szamlazz_cookie.txt";
 
@@ -38,32 +38,32 @@ class SzamlazzhuApi
 
 
 
-        // ebbe a fájlba menti a pdf-et, ha az xml-ben kértük
+        // Saves pdf to this file if we requested in XML
         if($schema->pdfTagName)$pdfTagName = $schema->pdfTagName;
         $curlName = $schema->curlName;
         $outError = "";
         $szamlaszam = "";
         $agent_body = "";
 
-        // ha kérjük a számla pdf-et, akkor legyen true
+        // If you ask the invoice pdf then be true
         $szamlaletoltes = true;
-        // ha még nincs --> létrehozzuk a cookie file-t --> léteznie kell, hogy a CURL írhasson bele
+        // If you don't have-> Create your cookie file-> you have to exist for Curl to write in
         if (!file_exists($cookie_file)) {
             file_put_contents($cookie_file, '');
         }
-        // a CURL inicializálása
+        // Initialization of Curl
         $ch = curl_init(self::URL_MAIN);
-        // A curl hívás esetén tanúsítványhibát kaphatunk az SSL tanúsítvány valódiságától
-        // függetlenül, ez az alábbi CURL paraméter állítással kiküszöbölhető,
-        // ilyenkor nincs külön SSL ellenőrzés:
+        // You can get a certificate error from the Curl call from the SSL Certificate's Reality
+        // regardless of this, this can be eliminated with the Curl parameter statement below,
+        // There is no separate SSL check:
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        // POST-ban küldjük az adatokat
+        // We will send the data in post
         curl_setopt($ch, CURLOPT_POST, true);
-        // Kérjük a HTTP headert a válaszba, fontos információk vannak benne
+        // Please http header in response, there are important information in it
         curl_setopt($ch, CURLOPT_HEADER, true);
-        // változóban tároljuk a válasz tartalmát, nem írjuk a kimenetbe
+        // Store the contents of the answer in a variable, do not write to the output
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // Kb így néz ki CURLFile használatával:
+        
 
 
 
@@ -111,16 +111,16 @@ class SzamlazzhuApi
 
 
 
-        // a curl már nem kell, lezárjuk
+        // Curl no longer needs to be closed
         curl_close($ch);
 
-        // a header soronként tartalmazza az információkat, egy tömbbe teszük a külön sorokat
+        // Header contains information per row, we put the separate lines in a block
         $header_array = explode("\n", $agent_header);
 
-        // ezt majd true-ra állítjuk ha volt hiba
+        // This will be set to TRUE if there was a mistake
         $volt_hiba = false;
 
-        // ebben lesznek a hiba információk, plusz a bodyban
+        // There will be the error information plus in the Body
         $agent_error = '';
         $agent_error_code = '';
 
@@ -197,12 +197,13 @@ class SzamlazzhuApi
 
         } else {
 
-          // ha nem volt hiba feldolgozzuk a válaszban érkezett pdf-et vagy szöveges információt
+          // if there was no error processing the PDF or text information received in the reply
 
-            // ha nem kértük a pdf-et akkor szöveges információ jött a válaszban, ezt kiírjuk
+            // if we didn't ask for pdf then text information came in the answer, we'll write this
 
             $out['error'] = $outError;
             $out['szamlaszam'] = $szamlaszam;
+            $out['url'] = urldecode($vevourl);
             $out['agent_body'] = $agent_body;
 
           return $out;
@@ -237,7 +238,8 @@ class SzamlazzhuApi
             }
         }
         return $ret;
-    } 
+    }
+ 
 
 
 

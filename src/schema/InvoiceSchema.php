@@ -36,7 +36,12 @@ class InvoiceSchema extends SzamlazzhuApi{
 
 
 
-
+    
+    /**
+     * InvoiceGenerateXml
+     *
+     * @return void
+     */
     public function InvoiceGenerateXml(){
 
 
@@ -156,7 +161,12 @@ class InvoiceSchema extends SzamlazzhuApi{
             return $this->schema;
 
         }
-
+    
+    /**
+     * InvoicePayedGenerateXml
+     *
+     * @return void
+     */
     public function InvoicePayedGenerateXml(){
         $this->schema = '<?xml version="1.0" encoding="UTF-8"?>
             <xmlszamlakifiz xmlns="http://www.szamlazz.hu/xmlszamlakifiz" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamlakifiz xmlszamlakifiz.xsd ">
@@ -183,7 +193,12 @@ class InvoiceSchema extends SzamlazzhuApi{
         return $this->schema;
 
     }
-
+   
+   /**
+    * InvoiceProFormaDeleteGenerateXml
+    *
+    * @return void
+    */
    public function InvoiceProFormaDeleteGenerateXml(){
         $this->schema = '<?xml version="1.0" encoding="UTF-8"?>
             <xmlszamladbkdel xmlns="http://www.szamlazz.hu/xmlszamladbkdel" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamladbkdel xmlszamladbkdel.xsd ">
@@ -210,7 +225,12 @@ class InvoiceSchema extends SzamlazzhuApi{
 
     }
 
-
+    
+    /**
+     * InvoiceStornoGenerateXml
+     *
+     * @return void
+     */
     public function InvoiceStornoGenerateXml(){
         $this->schema = '<?xml version="1.0" encoding="UTF-8"?>
             <xmlszamlast xmlns="http://www.szamlazz.hu/xmlszamlast" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamlast xmlszamlast.xsd ">
@@ -252,7 +272,12 @@ class InvoiceSchema extends SzamlazzhuApi{
         return $this->schema;
 
     }
-
+    
+    /**
+     * InvoiceGetDataGenerateXml
+     *
+     * @return void
+     */
     public function InvoiceGetDataGenerateXml(){
         $this->schema = '<?xml version="1.0" encoding="UTF-8"?>
                             <xmlszamlaxml xmlns="http://www.szamlazz.hu/xmlszamlaxml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamlaxml https://www.szamlazz.hu/szamla/docs/xsds/agentxml/xmlszamlaxml.xsd">';
@@ -270,7 +295,12 @@ class InvoiceSchema extends SzamlazzhuApi{
                 <pdf>'.(isset($this->header['pdf']) ? $this->header['pdf'] : 'false').'</pdf>
                 </xmlszamlaxml>';
     }
-
+    
+    /**
+     * InvoiceGetPDFGenerateXml
+     *
+     * @return void
+     */
     public function InvoiceGetPDFGenerateXml(){
         $this->schema = '<?xml version="1.0" encoding="UTF-8"?>
             <xmlszamlapdf xmlns="http://www.szamlazz.hu/xmlszamlapdf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmlszamlapdf https://www.szamlazz.hu/szamla/docs/xsds/agentpdf/xmlszamlapdf.xsd">';
@@ -288,7 +318,12 @@ class InvoiceSchema extends SzamlazzhuApi{
                 <szamlaKulsoAzon></szamlaKulsoAzon>
             </xmlszamlapdf>';
     }
-
+    
+    /**
+     * InvoiceAddItems
+     *
+     * @return void
+     */
     public function InvoiceAddItems(){
 
 
@@ -326,7 +361,12 @@ class InvoiceSchema extends SzamlazzhuApi{
             </tetel>';
 
     }
-
+    
+    /**
+     * InvoiceAddPayed
+     *
+     * @return void
+     */
     public function InvoiceAddPayed(){
         $this->invoicePayed .='
             <kifizetes>
@@ -335,7 +375,12 @@ class InvoiceSchema extends SzamlazzhuApi{
                 <osszeg>'.(isset($this->payed['osszeg']) ? $this->payed['osszeg'] : '').'</osszeg>
             </kifizetes>';
     }
-
+    
+    /**
+     * defineInvoiceType
+     *
+     * @return void
+     */
     public function defineInvoiceType(){
 
         /* create invoice */
@@ -439,6 +484,30 @@ class InvoiceSchema extends SzamlazzhuApi{
             $this->pdfTagName = "szamlaXmlszamlaPDF";
         }
 
+    }
+    
+    /**
+     * getCheckVatnumber
+     *
+     * @return void
+     */
+    public function getCheckVatnumberGenerateXml(){
+
+        $this->schema = '<?xml version="1.0" encoding="UTF-8"?>
+        <xmltaxpayer xmlns="http://www.szamlazz.hu/xmltaxpayer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.szamlazz.hu/xmltaxpayer http://www.szamlazz.hu/docs/xsds/agent/xmltaxpayer.xsd">
+            <beallitasok>';
+        if(!Yii::$app->params['szamlazzhu']['apikey'])
+            $this->schema .= '
+                <felhasznalo>'.Yii::$app->params['szamlazzhu']['felhasznalonev'].'</felhasznalo>
+                <jelszo>'.Yii::$app->params['szamlazzhu']['jelszo'].'</jelszo>';
+        else
+            $this->schema .= '
+                <szamlaagentkulcs>'.Yii::$app->params['szamlazzhu']['apikey'].'</szamlaagentkulcs>';
+            $this->schema .= '</beallitasok>';
+            $this->schema .= '
+            <torzsszam>'.(isset($this->header['torzsszam']) ? $this->header['torzsszam'] : '').'</torzsszam>';
+        $this->schema .= '</xmltaxpayer>';
+        
     }
 
 
