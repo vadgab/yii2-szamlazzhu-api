@@ -7,6 +7,7 @@ use Yii;
 use CURLFile;
 
 
+
 class InvoiceSchema extends SzamlazzhuApi{
 
     public $schema = "";
@@ -484,6 +485,13 @@ class InvoiceSchema extends SzamlazzhuApi{
             $this->pdfTagName = "szamlaXmlszamlaPDF";
         }
 
+        if($this->type==13){
+            $this->curlName = "action-szamla_agent_taxpayer";
+            $this->pdfTagName = "szamlaTaxAgentCheckXml";
+        }        
+
+
+
     }
     
     /**
@@ -507,6 +515,8 @@ class InvoiceSchema extends SzamlazzhuApi{
             $this->schema .= '
             <torzsszam>'.(isset($this->header['torzsszam']) ? $this->header['torzsszam'] : '').'</torzsszam>';
         $this->schema .= '</xmltaxpayer>';
+
+        return $this->schema;
         
     }
 

@@ -108,6 +108,7 @@ class SzamlazzhuApi
         // a body tárolása, ez lesz a pdf, vagy szöveges üzenet
         $agent_body = substr( $agent_response, $header_size );
 
+        var_dump($agent_body);
 
 
 
@@ -124,8 +125,8 @@ class SzamlazzhuApi
         $agent_error = '';
         $agent_error_code = '';
 
-        if(!$volt_hiba && $schema->curlName == "action-szamla_agent_xml")
-        return simplexml_load_string($agent_body);
+        if(!$volt_hiba && ($schema->curlName == "action-szamla_agent_xml" || $schema->curlName == "action-szamla_agent_taxpayer"))
+        return simplexml_load_string(str_replace(["ns2:","ns3:","ns4:"],["","",""],$agent_body),'SimpleXMLElement', LIBXML_NOCDATA);
 
 
 
@@ -201,10 +202,17 @@ class SzamlazzhuApi
 
             // if we didn't ask for pdf then text information came in the answer, we'll write this
 
-            $out['error'] = $outError;
-            $out['szamlaszam'] = $szamlaszam;
-            $out['url'] = urldecode($vevourl);
-            $out['agent_body'] = $agent_body;
+            if($schema->type == 13){
+
+              $out['agent_body'] = $agent_body;
+
+            }else{
+              $out['error'] = $outError;
+              $out['szamlaszam'] = $szamlaszam;
+              if(!empty($vevourl))$out['url'] = urldecode($vevourl);
+              $out['agent_body'] = $agent_body;
+            }
+            
 
           return $out;
         }
