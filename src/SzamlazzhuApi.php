@@ -108,10 +108,7 @@ class SzamlazzhuApi
         // a body tárolása, ez lesz a pdf, vagy szöveges üzenet
         $agent_body = substr( $agent_response, $header_size );
 
-        var_dump($agent_body);
-
-
-
+        
         // Curl no longer needs to be closed
         curl_close($ch);
 
